@@ -1,6 +1,3 @@
-/* eslint-disable no-unused-vars */
-/* eslint-disable no-useless-catch */
-
 import { Client, Account, ID } from "appwrite";
 import conf from "../conf/conf";
 
@@ -16,44 +13,41 @@ export class AuthService {
     this.account = new Account(this.client);
   }
 
-  // Create new account
+  // Create Account
   async createAccount({ email, password, name }) {
     try {
-      const userAccount = await this.account.create(
+      const newAccount = await this.account.create(
         ID.unique(),
         email,
         password,
         name
       );
 
-      return userAccount;
+      if (newAccount) {
+        return this.login({ email, password });
+      }
+
+      return newAccount;
     } catch (error) {
-      console.log("Create account error:", error);
+      console.log("Create Account Error:", error);
       throw error;
     }
   }
 
-  // Login user
+  // Login
   async login({ email, password }) {
     try {
-      // Remove existing session before creating a new one
-      try {
-        await this.account.deleteSessions();
-      } catch (sessionError) {
-        console.log("No active sessions found");
-      }
-
       return await this.account.createEmailPasswordSession(
         email,
         password
       );
     } catch (error) {
-      console.log("Login error:", error);
+      console.log("Login Error:", error);
       throw error;
     }
   }
 
-  // Get currently logged in user
+  // Get Current User
   async getCurrentUser() {
     try {
       return await this.account.get();
@@ -63,12 +57,12 @@ export class AuthService {
     }
   }
 
-  // Logout current user
+  // Logout
   async logout() {
     try {
-      await this.account.deleteSessions();
+      await this.account.deleteSession("current");
     } catch (error) {
-      console.log("Logout error:", error);
+      console.log("Logout Error:", error);
     }
   }
 }
